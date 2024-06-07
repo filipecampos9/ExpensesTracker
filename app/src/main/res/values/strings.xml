@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Expenses Tracker</string>
-    <string name="title_activity_add_expense">AddExpense</string>
+    <string name="add_expense">AddExpense</string>
+    <string name="amount">Amount</string>
+    <string name="expense_name">Expense Name</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+
+
 </resources>
