@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,28 +32,32 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.expensestracker.R
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun AddExpenseScreen(modifier: Modifier = Modifier) {
+fun AddExpenseScreen(
+    onCancelButtonClicked: () -> Unit,
+    onSaveButtonClicked: (String, String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var amountInput by remember { mutableStateOf("") }
     var expenseNameInput by remember { mutableStateOf("") }
-    val selectedValue by rememberSaveable { mutableStateOf("") }
-
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = modifier
-            .fillMaxSize()  // Preencher o tamanho total da tela
+            .fillMaxSize()
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
             .safeDrawingPadding(),
-        contentAlignment = Alignment.Center  // Centralizar o conteúdo
+        contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            InputField(
+            InputFieldText(
                 labelText = stringResource(id = R.string.expense_name),
                 value = expenseNameInput,
                 onValueChange = { newValue -> expenseNameInput = newValue },
@@ -60,7 +65,7 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .padding(bottom = 30.dp)
             )
-            InputField(
+            InputFieldNumber(
                 labelText = stringResource(id = R.string.amount),
                 value = amountInput,
                 onValueChange = { newValue -> amountInput = newValue },
@@ -77,15 +82,17 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
             ) {
                 OutlinedButton(
                     modifier = Modifier.weight(1f),
-                    onClick = { /*onCancelButtonClicked*/ }
+                    onClick = onCancelButtonClicked
                 ) {
                     Text(stringResource(R.string.cancel))
                 }
                 Button(
                     modifier = Modifier.weight(1f),
-                    // the button is enabled when the user makes a selection
-                    enabled = selectedValue.isNotEmpty(),
-                    onClick = {/*onNextButtonClicked*/}
+                    onClick = {
+                        scope.launch {
+                            onSaveButtonClicked(expenseNameInput, amountInput)
+                        }
+                    }
                 ) {
                     Text(stringResource(R.string.save))
                 }
@@ -94,13 +101,12 @@ fun AddExpenseScreen(modifier: Modifier = Modifier) {
     }
 }
 
-
 @Composable
-fun InputField(
+fun InputFieldNumber(
     labelText: String,
     value: String,
     onValueChange: (String) -> Unit,
-    action: ImeAction = ImeAction.Next,
+    action: ImeAction = ImeAction.Done,
     modifier: Modifier = Modifier
 ) {
     TextField(
@@ -117,6 +123,27 @@ fun InputField(
 }
 
 @Composable
+fun InputFieldText(
+    labelText: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    action: ImeAction = ImeAction.Next,
+    modifier: Modifier = Modifier
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(text = labelText) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = action
+        ),
+        modifier = modifier
+    )
+}
+
+@Composable
 fun ExpensesTrackerContent() {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -124,7 +151,12 @@ fun ExpensesTrackerContent() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AddExpenseScreen()
+            AddExpenseScreen(
+                onCancelButtonClicked = { /* Cancel action */ },
+                onSaveButtonClicked = { expenseName, amount ->
+                    // Save action
+                }
+            )
             Spacer(modifier = Modifier.weight(1f))
         }
     }
