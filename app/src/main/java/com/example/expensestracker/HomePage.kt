@@ -3,11 +3,13 @@ package com.example.expensestracker
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,10 +48,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.expensestracker.data.Expense
+import com.example.expensestracker.data.ExpenseViewModel
 import com.example.expensestracker.ui.theme.AddExpenseScreen
 
 
 class MainActivity : ComponentActivity() {
+    private val expenseViewModel: ExpenseViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -59,7 +65,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ExpenseApp()
+                    ExpenseApp(expenseViewModel = expenseViewModel)
                 }
             }
         }
@@ -116,7 +122,7 @@ fun PriceBox(
     val mediumPadding = 16.dp
     Card(
         modifier = modifier
-            .padding(mediumPadding),
+            .padding(bottom = mediumPadding),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ){
         Column(
@@ -143,6 +149,20 @@ fun PriceBox(
 }
 
 @Composable
+fun TransactionList(expenses: List<Expense>, modifier: Modifier) {
+    Column(modifier = modifier.padding(horizontal = 10.dp)) {
+        Text(text = "Recent Transactions", fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        expenses.forEach { expense ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Text(text = expense.name, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                Text(text = expense.amount, fontSize = 16.sp)
+            }
+        }
+    }
+}
+
+@Composable
 fun AddExpenseButton(onClick: () -> Unit = {}, modifier: Modifier = Modifier) {
     Button(
         onClick = onClick,
@@ -155,6 +175,7 @@ fun AddExpenseButton(onClick: () -> Unit = {}, modifier: Modifier = Modifier) {
 
 @Composable
 fun HomePage(
+    expenseViewModel: ExpenseViewModel,
     onAddExpenseButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -164,14 +185,17 @@ fun HomePage(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         PriceBox()
+        TransactionList(expenses = expenseViewModel.expenses, modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.weight(1f))
         AddExpenseButton(onClick = onAddExpenseButtonClicked)
     }
 }
 
 
+
 @Composable
 fun ExpenseApp(
+    expenseViewModel: ExpenseViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -195,6 +219,7 @@ fun ExpenseApp(
         ) {
             composable(route = ExpenseScreen.Home.name) {
                 HomePage(
+                    expenseViewModel = expenseViewModel,
                     onAddExpenseButtonClicked = {
                         navController.navigate(ExpenseScreen.AddExpense.name)
                     },
@@ -207,7 +232,7 @@ fun ExpenseApp(
                 AddExpenseScreen(
                     onCancelButtonClicked = { navController.navigateUp() },
                     onSaveButtonClicked = { expenseName, amount ->
-                        // Save expense data
+                        expenseViewModel.addExpense(Expense(expenseName, amount))
                         navController.navigateUp()
                     },
                     modifier = Modifier.fillMaxHeight()
@@ -217,10 +242,19 @@ fun ExpenseApp(
     }
 }
 
+
+
 @Preview(showBackground = true)
 @Composable
 fun ExpensesTrackerPreview() {
+
+    val sampleViewModel = ExpenseViewModel().apply {
+        addExpense(Expense(name = "Groceries", amount = "50.00 €"))
+        addExpense(Expense(name = "Transport", amount = "20.00 €"))
+        addExpense(Expense(name = "Utilities", amount = "100.00 €"))
+    }
+
     ExpensesTrackerTheme {
-        ExpenseApp()
+        ExpenseApp(expenseViewModel = sampleViewModel)
     }
 }

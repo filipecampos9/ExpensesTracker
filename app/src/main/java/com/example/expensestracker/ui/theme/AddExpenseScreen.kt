@@ -35,6 +35,7 @@ import com.example.expensestracker.R
 import kotlinx.coroutines.launch
 
 
+
 @Composable
 fun AddExpenseScreen(
     onCancelButtonClicked: () -> Unit,
@@ -90,7 +91,8 @@ fun AddExpenseScreen(
                     modifier = Modifier.weight(1f),
                     onClick = {
                         scope.launch {
-                            onSaveButtonClicked(expenseNameInput, amountInput)
+                            val formattedAmount = if (amountInput.endsWith("€")) amountInput else "$amountInput €"
+                            onSaveButtonClicked(expenseNameInput, formattedAmount)
                         }
                     }
                 ) {
