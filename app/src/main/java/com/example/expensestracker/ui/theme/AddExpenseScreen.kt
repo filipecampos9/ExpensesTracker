@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -39,12 +42,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddExpenseScreen(
     onCancelButtonClicked: () -> Unit,
-    onSaveButtonClicked: (String, String) -> Unit,
+    onSaveButtonClicked: (String, Double, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var amountInput by remember { mutableStateOf("") }
     var expenseNameInput by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
+    var isPositive by remember { mutableStateOf(true) }
 
     Box(
         modifier = modifier
@@ -64,7 +67,7 @@ fun AddExpenseScreen(
                 onValueChange = { newValue -> expenseNameInput = newValue },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 30.dp)
+                    .padding(bottom = 20.dp)
             )
             InputFieldNumber(
                 labelText = stringResource(id = R.string.amount),
@@ -72,8 +75,17 @@ fun AddExpenseScreen(
                 onValueChange = { newValue -> amountInput = newValue },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 30.dp)
+                    .padding(bottom = 10.dp)
             )
+            Row (
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Checkbox(
+                    checked = isPositive,
+                    onCheckedChange = { isPositive = it }
+                )
+                Text(text = if (isPositive) "Positive Expense" else "Negative Expense")
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -90,15 +102,14 @@ fun AddExpenseScreen(
                 Button(
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        scope.launch {
-                            val formattedAmount = if (amountInput.endsWith("€")) amountInput else "$amountInput €"
-                            onSaveButtonClicked(expenseNameInput, formattedAmount)
-                        }
+                        val amountDouble = amountInput.toDoubleOrNull() ?: 0.0
+                        onSaveButtonClicked(expenseNameInput, amountDouble, isPositive)
                     }
                 ) {
                     Text(stringResource(R.string.save))
                 }
             }
+
         }
     }
 }
@@ -155,8 +166,8 @@ fun ExpensesTrackerContent() {
         ) {
             AddExpenseScreen(
                 onCancelButtonClicked = { /* Cancel action */ },
-                onSaveButtonClicked = { expenseName, amount ->
-                    // Save action
+                onSaveButtonClicked = { expenseName, amount, isPositive ->
+                    // Save action with expenseName, amount, and isPositive parameters
                 }
             )
             Spacer(modifier = Modifier.weight(1f))

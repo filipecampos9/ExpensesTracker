@@ -147,7 +147,7 @@ fun PriceBox(
                 text = String.format("%.2f €", totalExpenses),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = if (totalExpenses >= 0) Color.Black else Color.Red
             )
         }
     }
@@ -155,7 +155,8 @@ fun PriceBox(
 
 @Composable
 fun TransactionList(expenses: List<Expense>, modifier: Modifier = Modifier) {
-    Column(modifier = modifier
+    Column(
+        modifier = modifier
             .padding(horizontal = 10.dp)
             .fillMaxSize()
     ) {
@@ -167,7 +168,11 @@ fun TransactionList(expenses: List<Expense>, modifier: Modifier = Modifier) {
                     .fillMaxWidth()
                     .padding(vertical = 10.dp)) {
                     Text(text = expense.name, fontSize = 25.sp, modifier = Modifier.weight(1f))
-                    Text(text = expense.amount, fontSize = 25.sp)
+                    Text(
+                        text = String.format("%+.2f €", if (expense.isPositive) expense.amount.toDouble() else -expense.amount.toDouble()),
+                        fontSize = 25.sp,
+                        color = if (expense.isPositive) Color.Green else Color.Red
+                    )
                 }
             }
         }
@@ -191,7 +196,7 @@ fun HomePage(
     onAddExpenseButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val totalExpenses by remember { derivedStateOf{ expenseViewModel.getTotalExpense()}}
+    val totalExpenses by remember { derivedStateOf { expenseViewModel.getTotalExpense() } }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -245,8 +250,9 @@ fun ExpenseApp(
             composable(route = ExpenseScreen.AddExpense.name) {
                 AddExpenseScreen(
                     onCancelButtonClicked = { navController.navigateUp() },
-                    onSaveButtonClicked = { expenseName, amount ->
-                        expenseViewModel.addExpense(Expense(expenseName, amount))
+                    onSaveButtonClicked = { expenseName, amount, isPositive ->
+                        expenseViewModel.addExpense(Expense(expenseName,
+                            amount, isPositive))
                         navController.navigateUp()
                     },
                     modifier = Modifier.fillMaxHeight()
@@ -263,14 +269,14 @@ fun ExpenseApp(
 fun ExpensesTrackerPreview() {
 
     val sampleViewModel = ExpenseViewModel().apply {
-        addExpense(Expense(name = "Groceries", amount = "50.00 €"))
-        addExpense(Expense(name = "Transport", amount = "20.00 €"))
-        addExpense(Expense(name = "Utilities", amount = "100.00 €"))
-        addExpense(Expense(name = "Dining Out", amount = "30.00 €"))
-        addExpense(Expense(name = "Entertainment", amount = "40.00 €"))
-        addExpense(Expense(name = "Subscriptions", amount = "15.00 €"))
-        addExpense(Expense(name = "Savings", amount = "300.00 €"))
-        addExpense(Expense(name = "Miscellaneous", amount = "10.00 €"))
+        addExpense(Expense(name = "Groceries", amount = 50.00, isPositive = false))
+        addExpense(Expense(name = "Transport", amount = 20.00, isPositive = false))
+        addExpense(Expense(name = "Utilities", amount = 100.00, isPositive = false))
+        addExpense(Expense(name = "Salary", amount = 1500.00, isPositive = true))
+        addExpense(Expense(name = "Dining Out", amount = 30.00, isPositive = false))
+        addExpense(Expense(name = "Bonus", amount = 200.00, isPositive = true))
+        addExpense(Expense(name = "Savings", amount = 300.00, isPositive = true))
+        addExpense(Expense(name = "Miscellaneous", amount = 10.00, isPositive = false))
     }
 
 

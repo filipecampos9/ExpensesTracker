@@ -3,7 +3,7 @@ package com.example.expensestracker.data
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 
-data class Expense(val name: String, val amount: String)
+data class Expense(val name: String, val amount: Double, val isPositive: Boolean)
 
 class ExpenseViewModel : ViewModel() {
     private val _expenses = mutableStateListOf<Expense>()
@@ -14,6 +14,6 @@ class ExpenseViewModel : ViewModel() {
     }
 
     fun getTotalExpense():Double {
-        return _expenses.sumOf {it.amount.replace("€", "").trim().toDouble()}
+        return _expenses.sumOf { if (it.isPositive) it.amount.toDouble() else -it.amount.toDouble()}
     }
 }
