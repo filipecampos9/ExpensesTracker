@@ -133,14 +133,14 @@ fun PriceBox(
         ) {
             Text(
                 text = ("Total Balance"),
-                fontSize = 24.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = ("0.00 €"),
-                fontSize = 24.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
@@ -151,12 +151,12 @@ fun PriceBox(
 @Composable
 fun TransactionList(expenses: List<Expense>, modifier: Modifier) {
     Column(modifier = modifier.padding(horizontal = 10.dp)) {
-        Text(text = "Recent Transactions", fontSize = 20.sp)
+        Text(text = "Recent Transactions", fontSize = 25.sp)
         Spacer(modifier = Modifier.height(8.dp))
         expenses.forEach { expense ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                Text(text = expense.name, fontSize = 16.sp, modifier = Modifier.weight(1f))
-                Text(text = expense.amount, fontSize = 16.sp)
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+                Text(text = expense.name, fontSize = 25.sp, modifier = Modifier.weight(1f))
+                Text(text = expense.amount, fontSize = 25.sp)
             }
         }
     }
