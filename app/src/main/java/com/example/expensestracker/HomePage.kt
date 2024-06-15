@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -31,7 +33,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -117,6 +121,7 @@ fun ExpensesTrackerTopBar(
 
 @Composable
 fun PriceBox(
+    totalExpenses: Double,
     modifier: Modifier = Modifier
 ) {
     val mediumPadding = 16.dp
@@ -139,7 +144,7 @@ fun PriceBox(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = ("0.00 €"),
+                text = String.format("%.2f €", totalExpenses),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -149,14 +154,21 @@ fun PriceBox(
 }
 
 @Composable
-fun TransactionList(expenses: List<Expense>, modifier: Modifier) {
-    Column(modifier = modifier.padding(horizontal = 10.dp)) {
+fun TransactionList(expenses: List<Expense>, modifier: Modifier = Modifier) {
+    Column(modifier = modifier
+            .padding(horizontal = 10.dp)
+            .fillMaxSize()
+    ) {
         Text(text = "Recent Transactions", fontSize = 25.sp)
         Spacer(modifier = Modifier.height(8.dp))
-        expenses.forEach { expense ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
-                Text(text = expense.name, fontSize = 25.sp, modifier = Modifier.weight(1f))
-                Text(text = expense.amount, fontSize = 25.sp)
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(expenses) { expense ->
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp)) {
+                    Text(text = expense.name, fontSize = 25.sp, modifier = Modifier.weight(1f))
+                    Text(text = expense.amount, fontSize = 25.sp)
+                }
             }
         }
     }
@@ -179,12 +191,14 @@ fun HomePage(
     onAddExpenseButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val totalExpenses by remember { derivedStateOf{ expenseViewModel.getTotalExpense()}}
+
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        PriceBox()
+        PriceBox(totalExpenses = totalExpenses)
         TransactionList(expenses = expenseViewModel.expenses, modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.weight(1f))
         AddExpenseButton(onClick = onAddExpenseButtonClicked)
@@ -252,7 +266,13 @@ fun ExpensesTrackerPreview() {
         addExpense(Expense(name = "Groceries", amount = "50.00 €"))
         addExpense(Expense(name = "Transport", amount = "20.00 €"))
         addExpense(Expense(name = "Utilities", amount = "100.00 €"))
+        addExpense(Expense(name = "Dining Out", amount = "30.00 €"))
+        addExpense(Expense(name = "Entertainment", amount = "40.00 €"))
+        addExpense(Expense(name = "Subscriptions", amount = "15.00 €"))
+        addExpense(Expense(name = "Savings", amount = "300.00 €"))
+        addExpense(Expense(name = "Miscellaneous", amount = "10.00 €"))
     }
+
 
     ExpensesTrackerTheme {
         ExpenseApp(expenseViewModel = sampleViewModel)

@@ -12,4 +12,8 @@ class ExpenseViewModel : ViewModel() {
     fun addExpense(expense: Expense) {
         _expenses.add(expense)
     }
+
+    fun getTotalExpense():Double {
+        return _expenses.sumOf {it.amount.replace("€", "").trim().toDouble()}
+    }
 }
