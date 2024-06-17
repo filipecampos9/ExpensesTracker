@@ -1,5 +1,6 @@
 package com.example.expensestracker.ui.theme
 
+import android.app.AlertDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -48,6 +50,8 @@ fun AddExpenseScreen(
     var amountInput by remember { mutableStateOf("") }
     var expenseNameInput by remember { mutableStateOf("") }
     var isPositive by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
 
     Box(
         modifier = modifier
@@ -72,7 +76,18 @@ fun AddExpenseScreen(
             InputFieldNumber(
                 labelText = stringResource(id = R.string.amount),
                 value = amountInput,
-                onValueChange = { newValue -> amountInput = newValue },
+                onValueChange = { newValue ->
+                    if (newValue.matches(Regex("[0-9.]*"))) { // Permite apenas números e ponto decimal
+                        amountInput = newValue
+                    } else {
+                        // Exibe um diálogo informando que apenas números são permitidos
+                        AlertDialog.Builder(context)
+                            .setTitle("Invalid Input")
+                            .setMessage("Only numbers are allowed.")
+                            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                            .show()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 10.dp)

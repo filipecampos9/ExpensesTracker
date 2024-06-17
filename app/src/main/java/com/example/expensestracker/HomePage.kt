@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -39,10 +42,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,7 +97,17 @@ fun ExpensesTrackerAppBar(
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = { Text(stringResource(currentScreen.title)) },
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(currentScreen.title),
+                    textAlign = TextAlign.Center // Centraliza o texto horizontalmente
+                )
+            }
+        },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
@@ -122,33 +138,50 @@ fun ExpensesTrackerTopBar(
 @Composable
 fun PriceBox(
     totalExpenses: Double,
+    totalIncome: Double,
+    totalBalance: Double,
     modifier: Modifier = Modifier
 ) {
     val mediumPadding = 16.dp
     Card(
-        modifier = modifier
-            .padding(bottom = mediumPadding),
+        modifier = modifier.padding(bottom = mediumPadding),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ){
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(mediumPadding)
+            modifier = Modifier.fillMaxWidth()
         ) {
+            Spacer(modifier = Modifier.height(mediumPadding))
             Text(
-                text = ("Total Balance"),
+                text = "Total Balance",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = String.format("%.2f €", totalExpenses),
+                text = String.format("%.2f €", totalBalance),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (totalExpenses >= 0) Color.Black else Color.Red
+                color = if (totalBalance >= 0) Color.Black else Color.Red
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = String.format("Income: %.2f €", totalIncome),
+                    fontSize = 16.sp,
+                    color = Color.Green
+                )
+                Text(
+                    text = String.format("Expenses: %.2f €", totalExpenses),
+                    fontSize = 16.sp,
+                    color = Color.Red
+                )
+            }
+            Spacer(modifier = Modifier.height(mediumPadding))
         }
     }
 }
@@ -162,7 +195,11 @@ fun TransactionList(expenses: List<Expense>, modifier: Modifier = Modifier) {
     ) {
         Text(text = "Recent Transactions", fontSize = 25.sp)
         Spacer(modifier = Modifier.height(8.dp))
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f) // Garante que a LazyColumn ocupa o espaço disponível
+        ) {
             items(expenses) { expense ->
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -178,7 +215,6 @@ fun TransactionList(expenses: List<Expense>, modifier: Modifier = Modifier) {
         }
     }
 }
-
 @Composable
 fun AddExpenseButton(onClick: () -> Unit = {}, modifier: Modifier = Modifier) {
     Button(
@@ -196,16 +232,24 @@ fun HomePage(
     onAddExpenseButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val totalExpenses by remember { derivedStateOf { expenseViewModel.getTotalExpense() } }
+    val totalExpenses by remember { derivedStateOf { expenseViewModel.totalExpenses } }
+    val totalIncome by remember { derivedStateOf { expenseViewModel.totalIncome } }
+    val totalBalance by remember { derivedStateOf { expenseViewModel.totalBalance } }
+
 
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        PriceBox(totalExpenses = totalExpenses)
+        PriceBox(
+            totalExpenses = totalExpenses,
+            totalIncome = totalIncome,
+            totalBalance = totalBalance,
+            )
         TransactionList(expenses = expenseViewModel.expenses, modifier = Modifier.weight(1f))
-        Spacer(modifier = Modifier.weight(1f))
         AddExpenseButton(onClick = onAddExpenseButtonClicked)
     }
 }
@@ -231,32 +275,46 @@ fun ExpenseApp(
             )
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = ExpenseScreen.Home.name,
-            modifier = Modifier.padding(innerPadding)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White) // Define a cor de fundo do conteúdo
         ) {
-            composable(route = ExpenseScreen.Home.name) {
-                HomePage(
-                    expenseViewModel = expenseViewModel,
-                    onAddExpenseButtonClicked = {
-                        navController.navigate(ExpenseScreen.AddExpense.name)
-                    },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(dimensionResource(R.dimen.padding_medium))
-                )
-            }
-            composable(route = ExpenseScreen.AddExpense.name) {
-                AddExpenseScreen(
-                    onCancelButtonClicked = { navController.navigateUp() },
-                    onSaveButtonClicked = { expenseName, amount, isPositive ->
-                        expenseViewModel.addExpense(Expense(expenseName,
-                            amount, isPositive))
-                        navController.navigateUp()
-                    },
-                    modifier = Modifier.fillMaxHeight()
-                )
+            // Adiciona a imagem de fundo
+            Image(
+                painter = painterResource(R.drawable.elegantbg),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
+            )
+
+            // Adiciona o conteúdo sobre a imagem de fundo
+            NavHost(
+                navController = navController,
+                startDestination = ExpenseScreen.Home.name,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(route = ExpenseScreen.Home.name) {
+                    HomePage(
+                        expenseViewModel = expenseViewModel,
+                        onAddExpenseButtonClicked = {
+                            navController.navigate(ExpenseScreen.AddExpense.name)
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(dimensionResource(R.dimen.padding_medium))
+                    )
+                }
+                composable(route = ExpenseScreen.AddExpense.name) {
+                    AddExpenseScreen(
+                        onCancelButtonClicked = { navController.navigateUp() },
+                        onSaveButtonClicked = { expenseName, amount, isPositive ->
+                            expenseViewModel.addExpense(Expense(expenseName,
+                                amount, isPositive))
+                            navController.navigateUp()
+                        }
+                    )
+                }
             }
         }
     }
