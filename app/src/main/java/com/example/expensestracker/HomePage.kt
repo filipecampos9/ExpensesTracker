@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -41,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -104,6 +106,7 @@ fun ExpensesTrackerAppBar(
             ) {
                 Text(
                     text = stringResource(currentScreen.title),
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center // Centraliza o texto horizontalmente
                 )
             }
@@ -143,48 +146,82 @@ fun PriceBox(
     modifier: Modifier = Modifier
 ) {
     val mediumPadding = 16.dp
-    Card(
-        modifier = modifier.padding(bottom = mediumPadding),
-        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
-    ){
+    Box(
+        modifier = modifier
+            .padding(bottom = mediumPadding)
+            .background(color = Color(193, 232, 255), shape = RoundedCornerShape(16.dp))
+            .height(250.dp)
+    ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = mediumPadding, end = mediumPadding)
         ) {
             Spacer(modifier = Modifier.height(mediumPadding))
             Text(
                 text = "Total Balance",
-                fontSize = 30.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.DarkGray
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = String.format("%.2f €", totalBalance),
-                fontSize = 30.sp,
+                fontSize = 25.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (totalBalance >= 0) Color.Black else Color.Red
+                color = if (totalBalance >= 0) Color.DarkGray else Color.Red
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(80.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = String.format("Income: %.2f €", totalIncome),
-                    fontSize = 16.sp,
-                    color = Color.Green
-                )
-                Text(
-                    text = String.format("Expenses: %.2f €", totalExpenses),
-                    fontSize = 16.sp,
-                    color = Color.Red
-                )
+                Column(
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = "Income",
+                        fontSize = 20.sp,
+                        color = Color.DarkGray
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = String.format("%.2f €", totalIncome),
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray
+                    )
+                }
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "Expenses",
+                        fontSize = 20.sp,
+                        color = Color.DarkGray
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = String.format("%.2f €", totalExpenses),
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(mediumPadding))
         }
+        Image(
+            painter = painterResource(id = R.drawable.file),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = mediumPadding, end = mediumPadding)
+        )
     }
 }
+
 
 @Composable
 fun TransactionList(expenses: List<Expense>, modifier: Modifier = Modifier) {
