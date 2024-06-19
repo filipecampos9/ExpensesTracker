@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -28,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -254,10 +256,11 @@ fun TransactionList(expenses: List<Expense>, modifier: Modifier = Modifier) {
 }
 @Composable
 fun AddExpenseButton(onClick: () -> Unit = {}, modifier: Modifier = Modifier) {
-    Button(
+    FilledTonalButton(
         onClick = onClick,
         modifier = modifier
-            .padding(16.dp),
+            .padding(16.dp)
+            .size(170.dp,50.dp),
     ) {
         Text(text = "+ ADD EXPENSE")
     }
@@ -371,7 +374,6 @@ fun ExpensesTrackerPreview() {
         addExpense(Expense(name = "Dining Out", amount = 30.00, isPositive = false))
         addExpense(Expense(name = "Bonus", amount = 200.00, isPositive = true))
         addExpense(Expense(name = "Savings", amount = 300.00, isPositive = true))
-        addExpense(Expense(name = "Miscellaneous", amount = 10.00, isPositive = false))
     }
 
 

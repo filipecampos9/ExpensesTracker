@@ -17,6 +17,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -109,12 +111,13 @@ fun AddExpenseScreen(
                 verticalAlignment = Alignment.Bottom
             ) {
                 OutlinedButton(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f),
                     onClick = onCancelButtonClicked
                 ) {
                     Text(stringResource(R.string.cancel))
                 }
-                Button(
+                FilledTonalButton(
                     modifier = Modifier.weight(1f),
                     onClick = {
                         val amountDouble = amountInput.toDoubleOrNull() ?: 0.0
